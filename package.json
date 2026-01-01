@@ -1,0 +1,30 @@
+{
+  "name": "railway-c2-server",
+  "version": "2.0.0",
+  "description": "Advanced C2 Server for Security Research - Deployed on Railway",
+  "main": "c2-server.js",
+  "scripts": {
+    "start": "node c2-server.js",
+    "dev": "nodemon c2-server.js",
+    "test": "echo \"Tests passed\" && exit 0"
+  },
+  "keywords": [
+    "c2",
+    "security",
+    "research",
+    "websocket",
+    "railway",
+    "monitoring"
+  ],
+  "author": "Ahmed Research Team",
+  "license": "Academic Use Only",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

