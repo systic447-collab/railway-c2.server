@@ -2182,6 +2182,70 @@ app.use(cors({
   credentials: true
 }));
 
+// ========== نظام تسجيل الدخول المباشر ==========
+const LOGIN_SYSTEM = {
+  users: {
+    'admin': { password: 'Admin@2024', role: 'admin' },
+    'researcher': { password: 'Research@2024', role: 'researcher' },
+    'ahmed': { password: 'Ahmed@2024', role: 'admin' }
+  }
+};
+
+// دالة تسجيل الدخول البسيطة
+function simpleLogin(username, password) {
+  const user = LOGIN_SYSTEM.users[username];
+  
+  if (user && user.password === password) {
+    // حفظ بيانات الدخول
+    localStorage.setItem('simple_auth', JSON.stringify({
+      username: username,
+      role: user.role,
+      loggedInAt: new Date().toISOString()
+    }));
+    
+    return {
+      success: true,
+      user: {
+        username: username,
+        role: user.role
+      }
+    };
+  }
+  
+  return {
+    success: false,
+    message: 'اسم المستخدم أو كلمة المرور غير صحيحة'
+  };
+}
+
+// دالة التحقق من الدخول
+function checkSimpleAuth() {
+  const authData = localStorage.getItem('simple_auth');
+  if (authData) {
+    try {
+      const user = JSON.parse(authData);
+      // تحقق من أن الجلسة لم تنتهِ (24 ساعة)
+      const loginTime = new Date(user.loggedInAt);
+      const now = new Date();
+      const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+      
+      if (hoursDiff < 24) {
+        return user;
+      } else {
+        localStorage.removeItem('simple_auth');
+      }
+    } catch (e) {
+      localStorage.removeItem('simple_auth');
+    }
+  }
+  return null;
+}
+
+// دالة تسجيل الخروج
+function simpleLogout() {
+  localStorage.removeItem('simple_auth');
+  window.location.reload();
+}
 // server.js على Render
 const WebSocket = require('ws');
 const express = require('express');
